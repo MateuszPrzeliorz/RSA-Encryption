@@ -7,8 +7,8 @@ namespace RSA_Encryption
 {
     public class WavFile
     {
-        public float[] Left;
-        public float[] Right;
+        public double[] Left;
+        public double[] Right;
 
         public int ChunkID { get; set; }
         public int ChunkSize { get; set; }
@@ -26,7 +26,7 @@ namespace RSA_Encryption
         public int Subchunk2ID { get; set; }
         public int Subchunk2Size { get; set; }
 
-        public bool ReadWav(string filename)
+        public void ReadWav(string filename)
         {
 
             using (FileStream fs = File.Open(Path.Combine(Directory.GetParent(Directory.GetCurrentDirectory()).Parent.FullName, @"data\", filename), FileMode.Open))
@@ -48,51 +48,33 @@ namespace RSA_Encryption
 
                 // DATA!
                 byte[] byteArray = reader.ReadBytes(Subchunk2Size);
+                int samples = (NumChannels == 2) ? (byteArray.Length) / 4 : (byteArray.Length) / 2;
 
-                int bytesForSamp = BitsPerSample / 8;
-                int samps = Subchunk2Size / bytesForSamp;
+                Left = new double[samples];
+                Right = (NumChannels == 2) ? new double[samples] : null;
 
-
-                float[] asFloat = null;
-                switch (BitsPerSample)
+                // Write to double array/s:
+                int i = 0, offset = 0;
+                while (offset < byteArray.Length)
                 {
-                    case 64:
-                        double[] asDouble = new double[samps];
-                        Buffer.BlockCopy(byteArray, 0, asDouble, 0, Subchunk2Size);
-                        asFloat = Array.ConvertAll(asDouble, e => (float)e);
-                        break;
-                    case 32:
-                        asFloat = new float[samps];
-                        Buffer.BlockCopy(byteArray, 0, asFloat, 0, Subchunk2Size);
-                        break;
-                    case 16:
-                        Int16[] asInt16 = new Int16[samps];
-                        Buffer.BlockCopy(byteArray, 0, asInt16, 0, Subchunk2Size);
-                        asFloat = Array.ConvertAll(asInt16, e => e / (float)Int16.MaxValue);
-                        break;
-                    default:
-                        return false;
+                    Left[i] = BytesToDouble(byteArray[offset], byteArray[offset + 1]);
+                    offset += 2;
+                    if (NumChannels == 2)
+                    {
+                        Right[i] = BytesToDouble(byteArray[offset], byteArray[offset + 1]);
+                        offset += 2;
+                    }
+                    i++;
                 }
 
-                switch (NumChannels)
-                {
-                    case 1:
-                        Left = asFloat;
-                        Right = null;
-                        return true;
-                    case 2:
-                        Left = new float[samps];
-                        Right = new float[samps];
-                        for (int i = 0, s = 0; i < samps/2; i++)
-                        {
-                            Left[i] = asFloat[s++];
-                            Right[i] = asFloat[s++];
-                        }
-                        return true;
-                    default:
-                        return false;
-                }
             }
+        }
+
+        private double BytesToDouble(byte firstByte, byte secondByte)
+        {
+            int s = BitConverter.ToUInt16(new byte[2] { (byte)secondByte, (byte)firstByte }, 0);
+
+            return s / 32768.0;
         }
     }
 }
