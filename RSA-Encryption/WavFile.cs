@@ -73,7 +73,7 @@ namespace RSA_Encryption
         private double BytesToDouble(byte firstByte, byte secondByte)
         {
             int s = BitConverter.ToUInt16(new byte[2] { (byte)secondByte, (byte)firstByte }, 0);
-
+            //int s = (secondByte << 8) | firstByte;
             return s / 32768.0;
         }
     }
