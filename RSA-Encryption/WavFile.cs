@@ -10,6 +10,8 @@ namespace RSA_Encryption
         public double[] Left;
         public double[] Right;
 
+        public string FileName { get; set; }
+
         public int ChunkID { get; set; }
         public int ChunkSize { get; set; }
         public int Format { get; set; }
@@ -26,17 +28,24 @@ namespace RSA_Encryption
         public int Subchunk2ID { get; set; }
         public int Subchunk2Size { get; set; }
 
-        public void ReadWav(string filename)
+        public WavFile(string fileName)
         {
+            FileName = fileName;
+        }
 
-            using (FileStream fs = File.Open(Path.Combine(Directory.GetParent(Directory.GetCurrentDirectory()).Parent.FullName, @"data\", filename), FileMode.Open))
+        public void ReadWav()
+        {
+            WriteMetaData();
+
+            using (FileStream fs = File.Open(Path.Combine(Directory.GetParent(Directory.GetCurrentDirectory()).Parent.FullName, @"data\", FileName), FileMode.Open))
             {
                 BinaryReader reader = new BinaryReader(fs);
+
                 ChunkID = reader.ReadInt32();
                 ChunkSize = reader.ReadInt32();
                 Format = reader.ReadInt32();
                 Subchunk1ID = reader.ReadInt32();
-                Subchunk1Size = reader.ReadInt32(); 
+                Subchunk1Size = reader.ReadInt32();
                 AudioFormat = reader.ReadInt16();
                 NumChannels = reader.ReadInt16();
                 SampleRate = reader.ReadInt32();
@@ -45,7 +54,6 @@ namespace RSA_Encryption
                 BitsPerSample = reader.ReadInt16();
                 Subchunk2ID = reader.ReadInt32();
                 Subchunk2Size = reader.ReadInt32();
-
                 // DATA!
                 byte[] byteArray = reader.ReadBytes(Subchunk2Size);
                 int samples = (NumChannels == 2) ? (byteArray.Length) / 4 : (byteArray.Length) / 2;
@@ -66,7 +74,27 @@ namespace RSA_Encryption
                     }
                     i++;
                 }
+            }
+        }
 
+        public void WriteMetaData()
+        {
+            using (FileStream fs = File.Open(Path.Combine(Directory.GetParent(Directory.GetCurrentDirectory()).Parent.FullName, @"data\", FileName), FileMode.Open))
+            {
+                BinaryReader reader = new BinaryReader(fs);
+                Console.WriteLine($"{nameof(ChunkID)}: {BitConverter.ToString(reader.ReadBytes(4)).Replace("-", string.Empty).ConvertHex()}");
+                Console.WriteLine($"{nameof(ChunkSize)}: {reader.ReadInt32()}");
+                Console.WriteLine($"{nameof(Format)}: {BitConverter.ToString(reader.ReadBytes(4)).Replace("-", string.Empty).ConvertHex()}");
+                Console.WriteLine($"{nameof(Subchunk1ID)}: {BitConverter.ToString(reader.ReadBytes(4)).Replace("-", string.Empty).ConvertHex()}");
+                Console.WriteLine($"{nameof(Subchunk1Size)}: {reader.ReadInt32()}");
+                Console.WriteLine($"{nameof(AudioFormat)}: {reader.ReadInt16()}");
+                Console.WriteLine($"{nameof(NumChannels)}: {reader.ReadInt16()}");
+                Console.WriteLine($"{nameof(SampleRate)}: {reader.ReadInt32()}");
+                Console.WriteLine($"{nameof(ByteRate)}: {reader.ReadInt32()}");
+                Console.WriteLine($"{nameof(BlockAlign)}: {reader.ReadInt16()}");
+                Console.WriteLine($"{nameof(BitsPerSample)}: {reader.ReadInt16()}");
+                Console.WriteLine($"{nameof(Subchunk2ID)}: {BitConverter.ToString(reader.ReadBytes(4)).Replace("-", string.Empty).ConvertHex()}");
+                Console.WriteLine($"{nameof(Subchunk2Size)}: {reader.ReadInt32()}\n");
             }
         }
 

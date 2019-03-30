@@ -7,11 +7,10 @@ namespace RSA_Encryption
     {
         static void Main(string[] args)
         {
-            string imageName = "example.wav";
+            string fileName = "example.wav";
 
-            WavFile wavFile = new WavFile();
-            wavFile.ReadWav(imageName);
-
+            WavFile wavFile = new WavFile(fileName);
+            wavFile.ReadWav();
             for (int i = 0; i < wavFile.Left.GetLength(0); i++)
             {
                 Console.WriteLine(wavFile.Left[i]);
