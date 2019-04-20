@@ -1,7 +1,9 @@
-﻿using System;
+﻿using NAudio.Wave;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading;
 
 namespace RSA_Encryption
 {
@@ -11,7 +13,10 @@ namespace RSA_Encryption
         public double[] Right;
 
         public string FileName { get; set; }
+        public string FilePath { get; set; }
+        public string FilePathCopy { get; set; }
 
+        public int HeaderSize { get; set; }
         public int ChunkID { get; set; }
         public int ChunkSize { get; set; }
         public int Format { get; set; }
@@ -28,19 +33,21 @@ namespace RSA_Encryption
         public int Subchunk2ID { get; set; }
         public int Subchunk2Size { get; set; }
 
-        public WavFile(string fileName)
+        public WavFile(string fileName, string fileCopy)
         {
             FileName = fileName;
+            FilePath = Path.Combine(Directory.GetParent(Directory.GetCurrentDirectory()).Parent.FullName, @"data\", fileName);
+            FilePathCopy = Path.Combine(Directory.GetParent(Directory.GetCurrentDirectory()).Parent.FullName, @"data\", fileCopy);
         }
 
         public void ReadWav()
         {
             WriteMetaData();
-
-            using (FileStream fs = File.Open(Path.Combine(Directory.GetParent(Directory.GetCurrentDirectory()).Parent.FullName, @"data\", FileName), FileMode.Open))
+            using (FileStream fs = File.Open(FilePath, FileMode.Open))
             {
                 BinaryReader reader = new BinaryReader(fs);
 
+                HeaderSize = 44;
                 ChunkID = reader.ReadInt32();
                 ChunkSize = reader.ReadInt32();
                 Format = reader.ReadInt32();
@@ -77,9 +84,39 @@ namespace RSA_Encryption
             }
         }
 
+        public void EditWavFile(int from, int until, Channel channel)
+        {
+            using (FileStream fs = File.Open(FilePath, FileMode.Open))
+            {
+                BinaryReader reader = new BinaryReader(fs);
+                using (var fileStream = new FileStream(FilePathCopy, FileMode.Create, FileAccess.Write, FileShare.None))
+                using (var bw = new BinaryWriter(fileStream))
+                {
+                    bw.Write(reader.ReadBytes(HeaderSize));
+                    for (int i = 0; i < Subchunk2Size ; i+=2)
+                    {
+                        var test = reader.ReadBytes(2);
+
+                        if (i >= GetBytesForSeconds(from) && i <= GetBytesForSeconds(until) && IsChosenChannel(channel, i))
+                        {
+                            byte[] bytes = new byte[test.Length];
+
+                            for (int j = 0; j < test.Length; j++)
+                            {
+                                bytes[j] = (byte)(j + 1);
+                            }
+                            test = bytes;
+                        }
+                        
+                        bw.Write(test);
+                    }
+                }
+            }
+        }
+
         public void WriteMetaData()
         {
-            using (FileStream fs = File.Open(Path.Combine(Directory.GetParent(Directory.GetCurrentDirectory()).Parent.FullName, @"data\", FileName), FileMode.Open))
+            using (FileStream fs = File.Open(FilePath, FileMode.Open))
             {
                 BinaryReader reader = new BinaryReader(fs);
                 Console.WriteLine($"{nameof(ChunkID)}: {BitConverter.ToString(reader.ReadBytes(4)).Replace("-", string.Empty).ConvertHex()}");
@@ -98,10 +135,52 @@ namespace RSA_Encryption
             }
         }
 
+        public string GetSeconds()
+        {
+            return String.Concat("This audio last ", (Subchunk2Size / ByteRate), " seconds.");
+        }
+
+        public void Play()
+        {
+            using (var audioFile = new AudioFileReader(FilePathCopy))
+            using (var outputDevice = new WaveOutEvent())
+            {
+                outputDevice.Init(audioFile);
+                outputDevice.Play();
+                while (outputDevice.PlaybackState == PlaybackState.Playing)
+                {
+                    Thread.Sleep(1000);
+                }
+            }
+        }
+
+        private int GetBytesForSeconds(int seconds)
+        {
+            return seconds * ByteRate;
+        }
+
+        private bool IsChosenChannel(Channel channel, int byteNum)
+        {
+            bool result;
+            switch(channel)
+            {
+                case Channel.Left:
+                    {
+                        return result = byteNum % 4 == 0 ? true : false;
+                    }
+                case Channel.Right:
+                    {
+                        return result = (byteNum % 4 != 0 && byteNum % 2 == 0) ? true : false;
+                    }
+                default:
+                    return false;
+            }
+        }
+
         private double BytesToDouble(byte firstByte, byte secondByte)
         {
-            int s = BitConverter.ToUInt16(new byte[2] { (byte)secondByte, (byte)firstByte }, 0);
-            //int s = (secondByte << 8) | firstByte;
+            var s = BitConverter.ToUInt16(new byte[2] { (byte)secondByte, (byte)firstByte }, 0);
+            //return s;
             return s / 32768.0;
         }
     }

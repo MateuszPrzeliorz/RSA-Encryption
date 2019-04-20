@@ -8,13 +8,14 @@ namespace RSA_Encryption
         static void Main(string[] args)
         {
             string fileName = "example.wav";
+            string fileCopy = "example_copy.wav";
 
-            WavFile wavFile = new WavFile(fileName);
+            WavFile wavFile = new WavFile(fileName, fileCopy);
             wavFile.ReadWav();
-            for (int i = 0; i < wavFile.Left.GetLength(0); i++)
-            {
-                Console.WriteLine(wavFile.Left[i]);
-            }
+            wavFile.EditWavFile(2, 10, Channel.Right);
+            wavFile.Play();
+            Console.WriteLine(wavFile.GetSeconds());
+            Console.ReadKey();
         }
     }
 }

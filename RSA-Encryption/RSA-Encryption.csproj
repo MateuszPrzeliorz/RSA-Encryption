@@ -6,4 +6,8 @@
     <RootNamespace>RSA_Encryption</RootNamespace>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="NAudio" Version="1.9.0-preview1" />
+  </ItemGroup>
+
 </Project>
