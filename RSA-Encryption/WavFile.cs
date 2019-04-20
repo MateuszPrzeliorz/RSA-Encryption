@@ -84,11 +84,12 @@ namespace RSA_Encryption
             }
         }
 
-        public void EditWavFile(int from, int until, Channel channel)
+        public void EditPartOfFile(int from, int until, Channel channel)
         {
             using (FileStream fs = File.Open(FilePath, FileMode.Open))
             {
                 BinaryReader reader = new BinaryReader(fs);
+                Random random = new Random();
                 using (var fileStream = new FileStream(FilePathCopy, FileMode.Create, FileAccess.Write, FileShare.None))
                 using (var bw = new BinaryWriter(fileStream))
                 {
@@ -103,7 +104,8 @@ namespace RSA_Encryption
 
                             for (int j = 0; j < test.Length; j++)
                             {
-                                bytes[j] = (byte)(j + 1);
+                                // random transformation - to improve?
+                                bytes[j] = (byte)((test[0] * random.Next(1, 10) + test[1] * random.Next(1, 10)) / 100);
                             }
                             test = bytes;
                         }
@@ -172,8 +174,10 @@ namespace RSA_Encryption
                     {
                         return result = (byteNum % 4 != 0 && byteNum % 2 == 0) ? true : false;
                     }
+                case Channel.Both:
+                        return true;
                 default:
-                    return false;
+                        return false;
             }
         }
 

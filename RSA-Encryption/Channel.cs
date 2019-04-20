@@ -8,5 +8,6 @@ namespace RSA_Encryption
     {
         Left = 1,
         Right = 2,
+        Both = 3,
     }
 }
