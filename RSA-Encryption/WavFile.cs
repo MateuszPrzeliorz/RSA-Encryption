@@ -105,7 +105,7 @@ namespace RSA_Encryption
                             for (int j = 0; j < test.Length; j++)
                             {
                                 // random transformation - to improve?
-                                bytes[j] = (byte)((test[0] * random.Next(1, 10) + test[1] * random.Next(1, 10)) / 100);
+                                bytes[j] = (byte)(random.Next(1, 255));
                             }
                             test = bytes;
                         }
