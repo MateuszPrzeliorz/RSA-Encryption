@@ -12,6 +12,8 @@ namespace RSA_Encryption
         public double[] Left;
         public double[] Right;
 
+        public byte[] Samples;
+
         public string FileName { get; set; }
         public string FilePath { get; set; }
         public string FilePathCopy { get; set; }
@@ -63,6 +65,9 @@ namespace RSA_Encryption
                 Subchunk2Size = reader.ReadInt32();
                 // DATA!
                 byte[] byteArray = reader.ReadBytes(Subchunk2Size);
+
+                Samples = byteArray;
+
                 int samples = (NumChannels == 2) ? (byteArray.Length) / 4 : (byteArray.Length) / 2;
 
                 Left = new double[samples];
@@ -156,6 +161,30 @@ namespace RSA_Encryption
             }
         }
 
+
+        public void Encrypt()
+        {
+            using (FileStream fs = File.Open(FilePath, FileMode.Open))
+            {
+                BinaryReader reader = new BinaryReader(fs);
+                using (var fileStream = new FileStream(FilePathCopy, FileMode.Create, FileAccess.Write, FileShare.None))
+                using (var bw = new BinaryWriter(fileStream))
+                {
+                    bw.Write(reader.ReadBytes(44));
+
+                    byte[] key = new byte[] { 0x22 };
+
+                    for (int i = 0; i < Subchunk2Size; i ++)
+                    {
+                        for (int j = 0; j < key.Length; j++)
+                        {
+                             Samples[i] = (byte)(Samples[i] ^ key[j]);
+                             bw.Write(Samples[i]);
+                        }
+                    }
+                }
+            }
+        }
         private int GetBytesForSeconds(int seconds)
         {
             return seconds * ByteRate;

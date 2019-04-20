@@ -12,9 +12,12 @@ namespace RSA_Encryption
 
             WavFile wavFile = new WavFile(fileName, fileCopy);
             wavFile.ReadWav();
-            wavFile.EditPartOfFile(2, 6, Channel.Both);
+            //wavFile.EditPartOfFile(2, 6, Channel.Left);
+            //wavFile.Play();
+            wavFile.Encrypt();
             wavFile.Play();
-            Console.WriteLine(wavFile.GetSeconds());
+            wavFile.Encrypt();
+            wavFile.Play();
             Console.ReadKey();
         }
     }
