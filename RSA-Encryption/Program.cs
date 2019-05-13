@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 
 namespace RSA_Encryption
@@ -14,9 +14,9 @@ namespace RSA_Encryption
             wavFile.ReadWav();
             //wavFile.EditPartOfFile(2, 6, Channel.Left);
             //wavFile.Play();
-            wavFile.Encrypt();
+            wavFile.EncryptXOR();
             wavFile.Play();
-            wavFile.Encrypt();
+            wavFile.EncryptXOR();
             wavFile.Play();
             Console.ReadKey();
         }
