@@ -1,4 +1,4 @@
-﻿using NAudio.Wave;
+using NAudio.Wave;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -185,6 +185,51 @@ namespace RSA_Encryption
                 }
             }
         }
+
+        public void EncryptXOR()
+        {
+            using (FileStream fs = File.Open(FilePath, FileMode.Open))
+            {
+                BinaryReader reader = new BinaryReader(fs);
+                using (var fileStream = new FileStream(FilePathCopy, FileMode.Create, FileAccess.Write, FileShare.None))
+                using (var bw = new BinaryWriter(fileStream))
+                {
+                    bw.Write(reader.ReadBytes(44));
+
+                    string key = "1iGW5@~A&:7(GQ.-D$6.X+l%2(kP[<[H|rz.zjwi1(YxRYT.5%?!5blw>2V3Oiz&qD~q1*5vaTz@xadMZu]VV9aM]w{Y~6:fR54;";
+
+                    for (int i = 0; i < Subchunk2Size; i++)
+                    {
+                        // get next byte from sample
+                        byte b = Samples[i];
+
+                        // cast to a uint
+                        uint byteCode = (uint)b;
+
+                        // get index of proper character from key
+                        int keyIndex = i % key.Length;
+
+                        // take the key character
+                        char keyChar = key[keyIndex];
+
+                        // cast it to a uint
+                        uint keyCode = (uint)keyChar;
+
+                        // perform XOR
+                        uint combinedCode = byteCode ^ keyCode;
+
+                        // cast back to a char
+                        byte combinedByte = (byte)combinedCode;
+
+                        // write result
+                        Samples[i] = combinedByte;
+                        bw.Write(combinedByte);
+                        
+                    }
+                }
+            }
+        }
+
         private int GetBytesForSeconds(int seconds)
         {
             return seconds * ByteRate;
