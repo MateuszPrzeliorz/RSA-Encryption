@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading;
+using System.Numerics;
 
 namespace RSA_Encryption
 {
@@ -228,6 +229,82 @@ namespace RSA_Encryption
                     }
                 }
             }
+        }
+
+        public void EncryptRSAv2(EncryptDecrypt ED, bool enc)
+        {
+            using (FileStream fs = File.Open(FilePath, FileMode.Open))
+            {
+                BinaryReader reader = new BinaryReader(fs);
+                using (var fileStream = new FileStream(FilePathCopy, FileMode.Create, FileAccess.Write, FileShare.None))
+                using (var bw = new BinaryWriter(fileStream))
+                {
+                    bw.Write(reader.ReadBytes(44));
+
+                    // create byte array
+                    byte[] byteArray = new byte[Subchunk2Size];
+                    for (int i = 0; i < Subchunk2Size; i++)
+                    {
+                        byteArray[i] = Samples[i];
+                    }
+                    Console.WriteLine("Subchunk2Size: " + Subchunk2Size);
+
+                    string message = System.Text.Encoding.ASCII.GetString(byteArray);
+
+                    // load message
+                    Console.WriteLine("Loading audio file...");
+                    ED.LoadWavFile(message);
+
+                    // encrypt
+                    string encryptedStr;
+
+                    if(enc == true)
+                    {
+                        Console.WriteLine("Starting encryption...");
+                        encryptedStr = ED.EncryptStr();
+                    } else
+                    {
+                        Console.WriteLine("Starting decryption...");
+                        encryptedStr = ED.DecryptStr();
+                    }
+
+                    Console.WriteLine("Converting encrypted str to byte array...");
+                    byte[] encByteArray = Encoding.ASCII.GetBytes(encryptedStr);
+
+                    Console.WriteLine("Writing result...");
+                    Console.WriteLine("New chunk size: " + encByteArray.Length + " compared to S2S: " + Subchunk2Size);
+                    Samples = new byte[encByteArray.Length];
+                    Subchunk2Size = encByteArray.Length;
+                    for (int i = 0; i < Subchunk2Size; i++)
+                    {
+                        if (i % (Subchunk2Size / 10) == 0)
+                            Console.WriteLine("Progress: " + i / (Subchunk2Size / 10) + "/10");
+                        
+                        // write result
+                        byte sample;
+                        if (i < encByteArray.Length)
+                            sample = encByteArray[i];
+                        else sample = Samples[i];
+
+                        Samples[i] = sample;
+                        bw.Write(sample);
+
+                    }
+                }
+            }
+        }
+
+        long IntPow(long x, long pow)
+        {
+            long ret = 1;
+            while (pow != 0)
+            {
+                if ((pow & 1) == 1)
+                    ret *= x;
+                x *= x;
+                pow >>= 1;
+            }
+            return ret;
         }
 
         private int GetBytesForSeconds(int seconds)
