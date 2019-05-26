@@ -240,7 +240,7 @@ namespace RSA_Encryption
                 using (var bw = new BinaryWriter(fileStream))
                 {
                     bw.Write(reader.ReadBytes(44));
-
+                    Encoding encoding = Encoding.GetEncoding("iso-8859-1");
                     // create byte array
                     byte[] byteArray = new byte[Subchunk2Size];
                     for (int i = 0; i < Subchunk2Size; i++)
@@ -248,8 +248,11 @@ namespace RSA_Encryption
                         byteArray[i] = Samples[i];
                     }
                     Console.WriteLine("Subchunk2Size: " + Subchunk2Size);
-
-                    string message = System.Text.Encoding.ASCII.GetString(byteArray);
+                    for (int i = 0; i < 20; i++)
+                    {
+                        Console.WriteLine("Przed: " + Samples[i]);
+                    }
+                    string message = encoding.GetString(byteArray);
 
                     // load message
                     Console.WriteLine("Loading audio file...");
@@ -267,9 +270,9 @@ namespace RSA_Encryption
                         Console.WriteLine("Starting decryption...");
                         encryptedStr = ED.DecryptStr();
                     }
-
+                   
                     Console.WriteLine("Converting encrypted str to byte array...");
-                    byte[] encByteArray = Encoding.ASCII.GetBytes(encryptedStr);
+                    byte[] encByteArray = encoding.GetBytes(encryptedStr);
 
                     Console.WriteLine("Writing result...");
                     Console.WriteLine("New chunk size: " + encByteArray.Length + " compared to S2S: " + Subchunk2Size);
@@ -289,6 +292,10 @@ namespace RSA_Encryption
                         Samples[i] = sample;
                         bw.Write(sample);
 
+                    }
+                    for (int i = 0; i < 20; i++)
+                    {
+                        Console.WriteLine("Po: " + Samples[i]);
                     }
                 }
             }
