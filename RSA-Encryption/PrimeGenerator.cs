@@ -159,6 +159,77 @@ namespace RSA_Encryption
             return true;
         }
 
+        public BigInteger getPhi(BigInteger i, BigInteger j)
+        {
+            return (i - 1) * (j - 1);
+        }
+
+        public BigInteger getE(BigInteger phi, BigInteger n)
+        {
+            Random rnd = new Random();
+
+            // e value should be smaller than phi
+            double phiDouble = double.MaxValue;
+            if (phi < 2000000000)
+                phiDouble = (int)phi;
+            else
+                phiDouble = 2000000000;
+            double upperBorder = Math.Log((phiDouble-1), 2);
+
+            int r = rnd.Next(1, (int)upperBorder);
+            BigInteger e = BigInteger.Pow(2, r) + 1;
+
+            // e value should be coprime to n and phi
+            while (!(IsCoprime(e, phi) && IsCoprime(e, n)))
+            {
+                r = rnd.Next(1, (int)upperBorder);
+                e = BigInteger.Pow(2, r) + 1;
+            }
+            return e;
+        }
+
+        public BigInteger getD(BigInteger e, BigInteger phi)
+        {
+            BigInteger d = modInverse(e, phi);
+            return d;
+        }
+
+        BigInteger modInverse(BigInteger a, BigInteger n)
+        {
+            BigInteger i = n;
+            BigInteger v = 0;
+            BigInteger d = 1;
+            while (a > 0)
+            {
+                BigInteger t = i / a, x = a;
+                a = i % x;
+                i = x;
+                x = d;
+                d = v - t * x;
+                v = x;
+            }
+            v %= n;
+            if (v < 0) v = (v + n) % n;
+            return v;
+        }
+
+        public BigInteger GetGCDByModulus(BigInteger value1, BigInteger value2)
+        {
+            while (value1 != 0 && value2 != 0)
+            {
+                if (value1 > value2)
+                    value1 %= value2;
+                else
+                    value2 %= value1;
+            }
+            return (value1 > value2) ? value1 : value2;
+        }
+
+        public bool IsCoprime(BigInteger value1, BigInteger value2)
+        {
+            return GetGCDByModulus(value1, value2) == 1;
+        }
+
         public byte[] HexDecode(string tmp)
         {
             string[] _string = tmp.Split('-');

@@ -25,27 +25,39 @@ namespace RSA_Encryption
             Console.WriteLine("---------------");
 
             // generate large prime numbers (p, q)
-            int bitsLength = 64;
+            int bitsLength = 16; // *OF P & Q -----> N will be 2 times bigger!*
             PrimeGenerator primeGenerator = new PrimeGenerator();
             BigInteger p = primeGenerator.generatePrimeNumber(bitsLength / 8); // 1 byte = 8 bits
             Console.WriteLine("Generated p = " + p);
             BigInteger q = primeGenerator.generatePrimeNumber(bitsLength / 8); // 1 byte = 8 bits
             Console.WriteLine("Generated q = " + q);
+            BigInteger phi = primeGenerator.getPhi(p, q);
+            Console.WriteLine("Calculated Phi = " + phi);
+            BigInteger e = primeGenerator.getE(phi, p*q);
+            Console.WriteLine("Generated e = " + e);
+            BigInteger d = primeGenerator.getD(e, phi);
+            Console.WriteLine("Generated d = " + d);
 
             // encryption / decryption helper instance
             EncryptDecrypt ED = new EncryptDecrypt();
-            ED.p = 53;
+            ED.p = p;
+            ED.q = q;
+            ED.e = e;
+            ED.d = d;
+            /*ED.p = 53;
             ED.q = 59;
             ED.e = 3; // should be picked randomly
-            ED.d = 2011;
+            ED.d = 2011;*/
 
-            
+
 
             wavFile.EncryptRSAv2(ED, true);
-            Console.WriteLine("Playing encrypted sound...");
+            Console.WriteLine("Ready to play encrypted sound... | Press random key to play!");
+            Console.ReadKey();
             wavFile.Play();
             wavFile.EncryptRSAv2(ED, false);
-            Console.WriteLine("Playing decrypted sound...");
+            Console.WriteLine("Ready to play decrypted sound... | Press random key to play!");
+            Console.ReadKey();
             wavFile.Play();
 
             Console.ReadKey();

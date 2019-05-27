@@ -22,12 +22,18 @@ namespace RSA_Encryption
         {
             Console.WriteLine("| e = " + e);
             Console.WriteLine("| n = " + n);
+
             string hex = message;
             char[] vs = hex.ToCharArray();
             String tmp = "";
 
+            Console.WriteLine("Total sound length: " + vs.Length);
+
             for (int i = 0; i < vs.Length; i++)
             {
+                if (i % (vs.Length / 10) == 0)
+                    Console.WriteLine("Progress: " + i / (vs.Length / 10) + "/10");
+
                 if (tmp == "")
                 {
                     tmp = tmp + RSA.Mod(vs[i], e, n);
@@ -38,7 +44,6 @@ namespace RSA_Encryption
                 }
             }
             return tmp;
-
         }
 
         public string Decryption(String image)
@@ -46,14 +51,20 @@ namespace RSA_Encryption
             Console.WriteLine("| d = " + d);
             Console.WriteLine("| n = " + n);
             char[] vs = image.ToCharArray();
-            int i = 0;
             int j = 0;
             string tmp = "";
             string tmp2 = "";
+
+            Console.WriteLine("Total sound length: " + vs.Length);
             try
             {
-                for (; i < vs.Length; i++)
+                Console.WriteLine("----- vs length: " + vs.Length);
+                for (int i = 0; i < vs.Length; i++)
                 {
+                    //Console.WriteLine("----- i: " + i + "     j: " + j);
+                    if (i % (vs.Length / 100) == 0)
+                        Console.WriteLine("Progress: " + i / (vs.Length / 100) + "/100");
+
                     tmp = "";
 
                     for (j = i; vs[j] != '-'; j++)
@@ -61,12 +72,15 @@ namespace RSA_Encryption
                         tmp = tmp + vs[j];
                     }
                     i = j;
-
-                    tmp2 = tmp2 + ((char)RSA.Mod(Convert.ToInt16(tmp), d, n)).ToString();
+                    //tmp2 += RSA.Mod(tmp, d, n);
+                    tmp2 = tmp2 + ((char)RSA.Mod(BigInteger.Parse(tmp), d, n)).ToString();
+                    //tmp2 = tmp2 + ((char)RSA.Mod(Convert.ToInt16(tmp), d, n)).ToString();
                 }
             }
             catch (Exception ex)
-            { }
+            {
+                Console.WriteLine("Cannot decode this sound!");
+            }
             return tmp2;
         }
 
