@@ -289,6 +289,10 @@ namespace RSA_Encryption
                         bw.Write(sample);
 
                     }
+                    for (int i = 0; i < 20; i++)
+                    {
+                        Console.WriteLine("Po: " + Samples[i]);
+                    }
                 }
             }
         }
