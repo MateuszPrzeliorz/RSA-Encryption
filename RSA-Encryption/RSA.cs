@@ -29,9 +29,9 @@ namespace RSA_Encryption
             }
         }
 
-        public static BigInteger N_val(BigInteger parameter1, BigInteger paramater2)
+        public static BigInteger N_val(BigInteger p, BigInteger q)
         {
-            return (parameter1 * paramater2);
+            return (p * q);
         }
 
         public static BigInteger PHI_val(BigInteger p1, BigInteger p2)

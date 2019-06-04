@@ -7,88 +7,88 @@ namespace RSA_Encryption
 {
     public class EncryptDecrypt
     {
-
          public BigInteger p;
          public BigInteger q;
          public BigInteger e;
          public BigInteger d;
          public BigInteger n;
-         string loadAudio = "";
-         string cipher = "";
-
-        private PrimeGenerator primeGenerator;
+         string audioFile = "";
 
         public string Encryption(string message)
         {
             Console.WriteLine("| e = " + e);
             Console.WriteLine("| n = " + n);
 
-            string hex = message;
-            char[] vs = hex.ToCharArray();
+            char[] soundCharArray = message.ToCharArray();
             String tmp = "";
+            String uncrypted = "";
 
-            Console.WriteLine("Total sound length: " + vs.Length);
+            Console.WriteLine("Total sound length: " + soundCharArray.Length);
 
-            for (int i = 0; i < vs.Length; i++)
+            for (int i = 0; i < soundCharArray.Length; i++)
             {
-                if (i % (vs.Length / 10) == 0)
-                    Console.WriteLine("Progress: " + i / (vs.Length / 10) + "/10");
+                uncrypted += soundCharArray[i];
+                if (i % (soundCharArray.Length / 10) == 0)
+                    Console.WriteLine("Progress: " + i / (soundCharArray.Length / 10) + "/10");
 
                 if (tmp == "")
                 {
-                    tmp = tmp + RSA.Mod(vs[i], e, n);
+                    tmp += RSA.Mod(soundCharArray[i], e, n);
                 }
                 else
                 {
-                    tmp = tmp + "-" + RSA.Mod(vs[i], e, n);
+                    tmp += "-" + RSA.Mod(soundCharArray[i], e, n);
+                    if (i == 50)
+                    {
+                        Console.WriteLine("The first 50 not encrypted samples:" +  uncrypted);
+                        Console.WriteLine("The first 50 encrypted samples:" +  tmp);
+                    }
                 }
             }
             return tmp;
         }
 
-        public string Decryption(String image)
+        public string Decryption(String message)
         {
             Console.WriteLine("| d = " + d);
             Console.WriteLine("| n = " + n);
-            char[] vs = image.ToCharArray();
-            int j = 0;
-            string tmp = "";
-            string tmp2 = "";
 
-            Console.WriteLine("Total sound length: " + vs.Length);
+            char[] soundCharArray = message.ToCharArray();
+            string tempStr = "";
+            string decryptedStr = "";
+            int j = 0;
+
+            Console.WriteLine("Total sound length: " + soundCharArray.Length);
             try
             {
-                Console.WriteLine("----- vs length: " + vs.Length);
-                for (int i = 0; i < vs.Length; i++)
+                Console.WriteLine("----- vs length: " + soundCharArray.Length);
+                for (int i = 0; i < soundCharArray.Length; i++)
                 {
-                    //Console.WriteLine("----- i: " + i + "     j: " + j);
-                    if (i % (vs.Length / 100) == 0)
-                        Console.WriteLine("Progress: " + i / (vs.Length / 100) + "/100");
+                    if (i % (soundCharArray.Length / 100) == 0)
+                        Console.WriteLine("Progress: " + i / (soundCharArray.Length / 100) + "/100");
 
-                    tmp = "";
+                    tempStr = "";
 
-                    for (j = i; vs[j] != '-'; j++)
+                    for (j = i; soundCharArray[j] != '-'; j++)
                     {
-                        tmp = tmp + vs[j];
+                        tempStr = tempStr + soundCharArray[j];
                     }
                     i = j;
-                    //tmp2 += RSA.Mod(tmp, d, n);
-                    tmp2 = tmp2 + ((char)RSA.Mod(BigInteger.Parse(tmp), d, n)).ToString();
-                    //tmp2 = tmp2 + ((char)RSA.Mod(Convert.ToInt16(tmp), d, n)).ToString();
+                    decryptedStr = decryptedStr + ((char)RSA.Mod(BigInteger.Parse(tempStr), d, n)).ToString();
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Cannot decode this sound!");
+                Console.WriteLine("Cannot decode this sound!", ex);
             }
-            return tmp2;
+            return decryptedStr;
         }
 
         public string EncryptStr()
         {
             Console.WriteLine("Calculating n value...");
             n = RSA.N_val(p, q);
-            string tmp = Encryption(loadAudio);
+            string tmp = Encryption(audioFile);
             return tmp;
         }
 
@@ -96,13 +96,13 @@ namespace RSA_Encryption
         {
             Console.WriteLine("Calculating n value...");
             n = RSA.N_val(p, q);
-            string tmp = Decryption(loadAudio);
+            string tmp = Decryption(audioFile);
             return tmp;
         }
 
         public void LoadWavFile(string message)
         {
-            loadAudio = message;
+            audioFile = message;
         }
 
     }

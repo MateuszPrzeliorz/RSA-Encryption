@@ -44,17 +44,12 @@ namespace RSA_Encryption
             ED.q = q;
             ED.e = e;
             ED.d = d;
-            /*ED.p = 53;
-            ED.q = 59;
-            ED.e = 3; // should be picked randomly
-            ED.d = 2011;*/
-
-
 
             wavFile.EncryptRSAv2(ED, true);
             Console.WriteLine("Ready to play encrypted sound... | Press random key to play!");
             Console.ReadKey();
             wavFile.Play();
+
             wavFile.EncryptRSAv2(ED, false);
             Console.WriteLine("Ready to play decrypted sound... | Press random key to play!");
             Console.ReadKey();

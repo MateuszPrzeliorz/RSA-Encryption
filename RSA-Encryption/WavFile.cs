@@ -239,30 +239,29 @@ namespace RSA_Encryption
                 using (var fileStream = new FileStream(FilePathCopy, FileMode.Create, FileAccess.Write, FileShare.None))
                 using (var bw = new BinaryWriter(fileStream))
                 {
+                    // read header
                     bw.Write(reader.ReadBytes(44));
-                    Encoding encoding = Encoding.GetEncoding("iso-8859-1");
-                    // create byte array
-                    byte[] byteArray = new byte[Subchunk2Size];
-                    for (int i = 0; i < Subchunk2Size; i++)
-                    {
-                        byteArray[i] = Samples[i];
-                    }
-                    Console.WriteLine("Subchunk2Size: " + Subchunk2Size);
-                    string message = encoding.GetString(byteArray);
 
-                    // load message
+                    // set encoding
+                    Encoding encoding = Encoding.GetEncoding("iso-8859-1");
+                    string message = encoding.GetString(Samples);
+
+                    Console.WriteLine("Subchunk2Size: " + Subchunk2Size);
                     Console.WriteLine("Loading audio file...");
+
+                    // loading audio file
                     ED.LoadWavFile(message);
 
-                    // encrypt
                     string encryptedStr;
 
                     if(enc == true)
                     {
+                        // encrypt message
                         Console.WriteLine("Starting encryption...");
                         encryptedStr = ED.EncryptStr();
                     } else
                     {
+                        // decrypt message
                         Console.WriteLine("Starting decryption...");
                         encryptedStr = ED.DecryptStr();
                     }
@@ -272,6 +271,7 @@ namespace RSA_Encryption
 
                     Console.WriteLine("Writing result...");
                     Console.WriteLine("New chunk size: " + encByteArray.Length + " compared to S2S: " + Subchunk2Size);
+
                     Samples = new byte[encByteArray.Length];
                     Subchunk2Size = encByteArray.Length;
                     for (int i = 0; i < Subchunk2Size; i++)
@@ -287,11 +287,6 @@ namespace RSA_Encryption
 
                         Samples[i] = sample;
                         bw.Write(sample);
-
-                    }
-                    for (int i = 0; i < 20; i++)
-                    {
-                        Console.WriteLine("Po: " + Samples[i]);
                     }
                 }
             }

@@ -170,28 +170,30 @@ namespace RSA_Encryption
 
             // e value should be smaller than phi
             double phiDouble = double.MaxValue;
-            if (phi < 2000000000)
-                phiDouble = (int)phi;
+ 
+            if (phi < (BigInteger)phiDouble)
+                phiDouble = (double)phi;
             else
-                phiDouble = 2000000000;
-            double upperBorder = Math.Log((phiDouble-1), 2);
-
+                phiDouble = double.MaxValue;
+            
+            double upperBorder = Math.Log((phiDouble+1), 2);
+            
             int r = rnd.Next(1, (int)upperBorder);
             BigInteger e = BigInteger.Pow(2, r) + 1;
-
+            
             // e value should be coprime to n and phi
             while (!(IsCoprime(e, phi) && IsCoprime(e, n)))
             {
                 r = rnd.Next(1, (int)upperBorder);
                 e = BigInteger.Pow(2, r) + 1;
             }
+
             return e;
         }
 
         public BigInteger getD(BigInteger e, BigInteger phi)
         {
-            BigInteger d = modInverse(e, phi);
-            return d;
+            return modInverse(e, phi);
         }
 
         BigInteger modInverse(BigInteger a, BigInteger n)
@@ -213,21 +215,23 @@ namespace RSA_Encryption
             return v;
         }
 
-        public BigInteger GetGCDByModulus(BigInteger value1, BigInteger value2)
+        // check if a is coprime to b
+        public bool IsCoprime(BigInteger a, BigInteger b)
         {
-            while (value1 != 0 && value2 != 0)
-            {
-                if (value1 > value2)
-                    value1 %= value2;
-                else
-                    value2 %= value1;
-            }
-            return (value1 > value2) ? value1 : value2;
+            return GetGCDByModulus(a, b) == 1;
         }
 
-        public bool IsCoprime(BigInteger value1, BigInteger value2)
+        // calculate Greatest common divisor
+        public BigInteger GetGCDByModulus(BigInteger a, BigInteger n)
         {
-            return GetGCDByModulus(value1, value2) == 1;
+            while (a != 0 && n != 0)
+            {
+                if (a > n)
+                    a %= n;
+                else
+                    n %= a;
+            }
+            return (a > n) ? a : n;
         }
 
         public byte[] HexDecode(string tmp)
